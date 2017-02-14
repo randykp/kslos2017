@@ -161,7 +161,255 @@ jika berhasil terkonek maka :
 - di server akan mendapatkan pesan "Got connection from ('127.0.0.1', 40644)
 - di sisi client akan mendapatkan pesan "Thank you for connecting"
 
+--------|HTTP
+
+Hypertext Transfer Protocol adalah aplikasi protokol untuk sistem informasi hypermedia.
+HTTP adalah teks terstruktur yang menggunakan hyperlinks antar node berisi teks. Standar
+pengembangan HTTP dikoordinasi oleh IETF.
+
+Versi pertama dari HTTP yaitu HTTP/0.9 adalah simple protocol hanya untuk raw data transfer.
+HTTP/1.0 yang ditetapkan pada RFC 1945, menambah beberapa fitur seperti format "messsage"
+yang "MIME-like", berisi informasi tentang data yang dikirim.
+
+contoh http uri yang valid :
+    http://abc.com:80/~smith/home.html
+    http://ABC.com/%7Esmith/home.html
+    http://ABC.com:/%7esmith/home.html
+
+--------|Request method
+
+Request method adalah apa saja "action" yang bisa dilakukan oleh client pada resource URI
+yang ada. Apakah method tersebut akan dibalas semestinya? tergantung dengan servernya.
+
+ + GET : method ini meminta kepada server representasi dari resource yang spesifik. Re
+		quest menggunakan GET hanya menerima data saja.
+ + HEAD : mirip seperti GET namun tanpa response body. biasanya digunakan untuk meli
+                    hat tentang meta-information tanpa harus menerima seluruh pesan.
+ + POST : saat server menerima request ini, apa-apa yang ditulis pada Request URI dapat
+		   menjadi bagian dari web resource. Data yang di POSTed misalnya, nama, userid,
+		   password, pesan untuk forum, dll.
+
+Tiga method diatas adalah yang penting untuk dipahami. Method lainnya : PUT, DELETE,
+TRACE, CONNECT
+
+Contoh Request URI : 
+GET http://www.w3.org/pub/WWW/TheProject.html HTTP/1.1
+
+!!Cobalah untuk melakukan inspect element pada browser, ubahlah tab ke network dan 
+buka sebuah website, perhatikan header maupun response messagenya!!
+
+--------|HTTP Header
+
+Berisi meta-informasi tentang pesan(message body) yang dikirim.
+Berisi general-header, request-header, response-header, dan entity header.
+
+general-header = Cache-Control      
+                      | Connection         
+                      | Date                   
+                      | Pragma                 
+                      | Trailer             
+                      | Transfer-Encoding    
+                      | Upgrade            
+                      | Via                    
+                      | Warning                
+
+        request-header = Accept                
+                      | Accept-Charset       
+                      | Accept-Encoding       
+                      | Accept-Language      
+                      | Authorization 
+                      | Expect             
+                      | From                 
+                      | Host                     
+                      | If-Match                
+         	      | If-Modified-Since      
+                      | If-None-Match           
+                      | If-Range             
+                      | If-Unmodified-Since  
+                      | Max-Forwards         
+                      | Proxy-Authorization   
+                      | Range                 
+                      | Referer              
+                      | TE                  
+                      | User-Agent            
+       entity-header  = Allow                
+                      | Content-Encoding      
+                      | Content-Language     
+                      | Content-Length        
+                      | Content-Location       
+                      | Content-MD5           
+                      | Content-Range      
+                      | Content-Type         
+                      | Expires              
+                      | Last-Modified      
+                      | extension-header
+
+Kebanyakan dari header field adalah opsional, jika ingin pelajarilah di rfc2616
+
+Contoh :
+Date: Mon, 23 May 2005 22:38:34 GMT
+Content-Type: text/html; charset=UTF-8
+Content-Encoding: UTF-8
+Content-Length: 138
+Last-Modified: Wed, 08 Jan 2003 23:11:55 GMT
+Server: Apache/1.3.3.7 (Unix) (Red-Hat/Linux)
+ETag: "3f80f-1b6-3e1cb03b"
+Accept-Ranges: bytes
+Connection: close
+--------|HTTP Response Body
+
+Berisi pesan yang dikirim oleh server.
+
+Contoh :
+
+<html>
+<head>
+  <title>An Example Page</title>
+</head>
+<body>
+  Hello World, this is a very simple HTML document.
+</body>
+</html>
+
+--------|Simple web server Python
+
+Kita dapat membuat web server dengan satu commandline saja pada python, cobalah command
+berikut :
++---------------------------------------
+$ cd <lokasi tujuan>
+$ python -m SimpleHTTPServer
++---------------------------------------
+
+--------|Praktek Request Method
+
+==GET== 
+<?php
+   if( $_GET["name"] || $_GET["age"] ) {
+      echo "Welcome ". $_GET['name']. "<br />";
+      echo "You are ". $_GET['age']. " years old.";
+      
+      exit();
+   }
+?>
+<html>
+   <body>
+   
+      <form action = "<?php $_PHP_SELF ?>" method = "GET">
+         Name: <input type = "text" name = "name" />
+         Age: <input type = "text" name = "age" />
+         <input type = "submit" />
+      </form>
+      
+   </body>
+</html>
+
+save as "cobaget.php"
+jalankan server dengan command berikut :
+
++---------------------------------------
+$ cd <lokasi cobaget.php>
+$ php -S <host>:<port>        //contoh $php -S 0.0.0.0:8000
++---------------------------------------
+
+==POST==
+
+<?php
+   if( $_POST["name"] || $_POST["age"] ) {
+      if (preg_match("/[^A-Za-z'-]/",$_POST['name'] )) {
+         die ("invalid name and name should be alpha");
+      }
+      echo "Welcome ". $_POST['name']. "<br />";
+      echo "You are ". $_POST['age']. " years old.";
+      
+      exit();
+   }
+?>
+<html>
+   <body>
+   
+      <form action = "<?php $_PHP_SELF ?>" method = "POST">
+         Name: <input type = "text" name = "name" />
+         Age: <input type = "text" name = "age" />
+         <input type = "submit" />
+      </form>
+   
+   </body>
+</html>
+
+save as "cobapost.php"
+jalankan server dengan command berikut :
++---------------------------------------
+$ cd <lokasi cobapost.php>
+$ php -S <host>:<port>        //contoh $php -S 0.0.0.0:8000
++---------------------------------------
+
+
+!!! Masuk ke browser dan ketikan HTTP URI http://<host>:<port>/<namafile>.php
+!!! Lalu perhatikan apa yang terjadi pada Inspect Element -> Network
+!!! Lalu cobalah menggunakan telnet untuk mengirim request URI
+
+--------|Terminologi
+
+user agent
+	Client yang memulai request, biasanya browser, editor, spiders( robot yang menyelusri
+ 	website), atau tools2 lain.
+
+--------|Status code pada HTTP
+
+      - 1xx: Informational
+      - 2xx: Success
+      - 3xx: Redirection
+      - 4xx: Client Error
+      - 5xx: Server Error
+
+Status-Code    =
+            "100"  ; Section 10.1.1: Continue
+          | "101"  ; Section 10.1.2: Switching Protocols
+          | "200"  ; Section 10.2.1: OK
+          | "201"  ; Section 10.2.2: Created
+          | "202"  ; Section 10.2.3: Accepted
+          | "203"  ; Section 10.2.4: Non-Authoritative Information
+          | "204"  ; Section 10.2.5: No Content
+          | "205"  ; Section 10.2.6: Reset Content
+          | "206"  ; Section 10.2.7: Partial Content
+          | "300"  ; Section 10.3.1: Multiple Choices
+          | "301"  ; Section 10.3.2: Moved Permanently
+          | "302"  ; Section 10.3.3: Found
+          | "303"  ; Section 10.3.4: See Other
+          | "304"  ; Section 10.3.5: Not Modified
+          | "305"  ; Section 10.3.6: Use Proxy
+          | "307"  ; Section 10.3.8: Temporary Redirect
+          | "400"  ; Section 10.4.1: Bad Request
+          | "401"  ; Section 10.4.2: Unauthorized
+          | "402"  ; Section 10.4.3: Payment Required
+          | "403"  ; Section 10.4.4: Forbidden
+          | "404"  ; Section 10.4.5: Not Found
+          | "405"  ; Section 10.4.6: Method Not Allowed
+          | "406"  ; Section 10.4.7: Not Acceptable
+          | "407"  ; Section 10.4.8: Proxy Authentication Required
+          | "408"  ; Section 10.4.9: Request Time-out
+          | "409"  ; Section 10.4.10: Conflict
+          | "410"  ; Section 10.4.11: Gone
+          | "411"  ; Section 10.4.12: Length Required
+          | "412"  ; Section 10.4.13: Precondition Failed
+          | "413"  ; Section 10.4.14: Request Entity Too Large
+          | "414"  ; Section 10.4.15: Request-URI Too Large
+          | "415"  ; Section 10.4.16: Unsupported Media Type
+          | "416"  ; Section 10.4.17: Requested range not satisfiable
+          | "417"  ; Section 10.4.18: Expectation Failed
+          | "500"  ; Section 10.5.1: Internal Server Error
+          | "501"  ; Section 10.5.2: Not Implemented
+          | "502"  ; Section 10.5.3: Bad Gateway
+          | "503"  ; Section 10.5.4: Service Unavailable
+          | "504"  ; Section 10.5.5: Gateway Time-out
+          | "505"  ; Section 10.5.6: HTTP Version not supported
+
 --------|Links&Referensi
+http://www.tutorialspoint.com/php/php_get_post.htm
+http://www.linuxjournal.com/content/tech-tip-really-simple-http-server-python
+https://www.ietf.org/rfc/rfc2616.txt*
 http://www.tutorialspoint.com/python/python_networking.htm
 Erickson, John. 2008. Hacking : Art of Exploitation
+
+
 
