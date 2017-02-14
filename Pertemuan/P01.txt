@@ -1,0 +1,167 @@
+__/\\\________/\\\_____/\\\\\\\\\\\____/\\\___________________/\\\\\__________/\\\\\\\\\\\___        
+ _\/\\\_____/\\\//____/\\\/////////\\\_\/\\\_________________/\\\///\\\______/\\\/////////\\\_       
+  _\/\\\__/\\\//______\//\\\______\///__\/\\\_______________/\\\/__\///\\\___\//\\\______\///__      
+   _\/\\\\\\//\\\_______\////\\\_________\/\\\______________/\\\______\//\\\___\////\\\_________     
+    _\/\\\//_\//\\\_________\////\\\______\/\\\_____________\/\\\_______\/\\\______\////\\\______    
+     _\/\\\____\//\\\___________\////\\\___\/\\\_____________\//\\\______/\\\__________\////\\\___   
+      _\/\\\_____\//\\\___/\\\______\//\\\__\/\\\______________\///\\\__/\\\_____/\\\______\//\\\__  
+       _\/\\\______\//\\\_\///\\\\\\\\\\\/___\/\\\\\\\\\\\\\\\____\///\\\\\/_____\///\\\\\\\\\\\/___ 
+        _\///________\///____\///////////_____\///////////////_______\/////_________\///////////_____
+
+CATATAN PELATIHAN KSLOS 14/01/2017
+Latihan 01 : Basic Networking 
+
+Terdapat tujuh lapisan pada OSI Model, 7 layer itu sebagai berikut :
+
+Physical layer ->
+Lapisan ini berurusan dengan koneksi fisik antara dua entitas. Peran utamanya adalah
+untuk komunikasi raw bit streams. Lapisan ini bertanggung jawab atas aktivasi, 
+maintenance, dan mematikan komunikasi bit streams.
+contoh : pengkabelan, bagaimana nic berinteraksi dengan kabel.
+
+Data-link layer ->
+Lapisan ini berurusan dengan transfer data(real) antar dua entitas. Berbeda dengan
+Physical layer yang bekerja dengan raw bits, lapisan ini menyediakan fungsi "high-level"
+seperti "error correction" dan "flow control". Lapisan ini juga menyediakan prosedur
+aktivasi, maintenance, dan mematikan koneksi data-link.
+contoh : bagaimana hub, bridge,repeater berinteraksi. bagaimana bit-bit tsb dikelompokan
+	 menjadi "frame".
+
+Network layer ->
+Lapisan ini bekerja sebagai "middle ground". Fungsi utamanya ialah meng-oper informasi
+antara lapisan yang dibawahnya(physical, data-link) dengan yang diatasnya. Network layer 
+melaksanakan adressing dan routing.
+contoh: mendefinisikan alamat ip
+
+
+Transport layer ->
+Lapisan ini menyediakan transfer data secara transparan. Dengan menyediakan komunikasi 
+data yang "reliable", lapisan yang diatasnya tidak perlu khawatir akan reabilitas dan
+"cost-effectiveness" akan transmisi datanya.
+contoh : bagaimana memecah data kedalam paket-paket (baca:TCP, UDP)
+
+Session layer ->
+Lapisan ini bertanggung jawab untuk membuka("establish") dan "maintenance" koneksi antar
+aplikasi jaringan.
+
+Presentation layer-> 
+Lapisan ini bertanggung jawab untuk representasi data ke aplikasi dalam syntax atau bahasa
+yang dimengeerti aplikasi tsb. Karena itu teknik-teknik seperti enkripsi atau kompresi data
+dapat dilakukan disini.
+contoh : mentralasikan data kedalam format aplikasi tertentu. protokol network shell 
+	 bekerja disini.
+
+Application layer ->
+Lapisan ini bertanggung jawab untuk meninjau syarat-syarat dari aplikasi. 
+Mengatur bagaimana aplikasi mengakses jaringan, membuat error message.
+contoh: HTTP, FTP, SMTP.
+
+
+--------|Socket
+
+Socket adalah cara standar untuk melakukan komunikasi jaringan melalui OS. Sebenarnya
+socket ini hanya abstraksi programmer yang telah mencakup detil-detil dari OSI model, 
+sehingga programmer tidak perlu lagi memikirkan OSI model tersebut.
+
+Socket dapat digunakan untuk mengirim dan menerima data. Data dikirimkan melalui "session
+layer". Ada dua tipe socket yaitu stream socket dan datagram socket.
+
+Stream sockets -> 
+Menyediakan komunikasi dua arah yang "reliable" seperti saat kita menelpon seseorang.
+Stream sockets menggunakan protokol komunikasi bernama "Transmission Control Protocol"
+atau sering disingkat TCP, yang berada pada Transport Layer pada model OSI.
+
+Datagram sockets ->
+Komunikasi satu arah yang tidak "reliable", tidak ada konfirmasi bahwa paket sudah diterima.
+Datagram socket mirip dengan mengirim surat. Socket ini menggunakan protokol bernama
+"User Datagram Socket" yang disingkat UDP, berada di Transport Layer pada model OSI.
+Biasanya digunakan pada online games atau layanan streaming.
+
+
+Istilah-istilah pada socket:
+ISTILAH		DESKRIPSI
+domain		AF_INET, PF_INET, PF_UNIX, PF_X25 (socket_family)
+type		SOCK_STREAM, SOCK_DGRAM (socket_type)
+protocol	Biasanya 0, tapi dapat digunakan untuk mengatur protocol
+hostname	Identifikasi antarmuka jaringan:
+		
+		+String, bisa nama host, alamat ipv4  atau ipv6
+    		+String "<broadcast>", berarti alamat INADDR_BROADCAST
+    		+String "", yang berarti INADDR_ANY
+		+Sebuah integer hasil konversi alamat host dalam "host byte order"
+    		
+port		Dapat berisi angka port, string yang berisi angka port, atau nama servicenya. 
+		Suatu server bisa "listen" lebih dari satu port
+
+
+---------| Socket pada python
+
+Membuat objek socket :
+
+import socket 
+s = socket.socket (socket_family, socket_typpe, protocol=0)
+
+setelah membuat socket, kita dapat menggunakan fungsi socket :
+
+Fungsi pada Server Socket
+FUNGSI		DEKRIPSI
+s.bind() 	mengikat alamat pada socket
+s.listen()	membuat dan memulai "TCP listener"
+s.accept()	menerima koneksi TCP, lalu menunggu sampai koneksi datang
+
+Fungsi pada Client Socket
+FUNGSI		DEKRIPSI
+s.connect()	mengconnect dengan TCP server
+
+Metode Socket
+FUNGSI			DEKRIPSI
+s.recv()		Menerima pesan TCP
+s.send()		Mengirim pesan TCP
+s.recvfrom()		Menerima pesan UDP
+s.sendto()		Mengirim pesan UDP
+socket.gethostname()	Menampilkan nama host
+
+---------| Membuat server dan client sederhana
+
+server.py
+
+#!/usr/bin/python          
+	 
+import socket          
+     
+s = socket.socket()        
+host = socket.gethostname() 
+port = 12345                
+s.bind((host, port))        
+
+s.listen(5)                 
+while True:
+   c, addr = s.accept()     
+   print 'Got connection from', addr
+   c.send('Thank you for connecting')
+   c.close()               
+
+
+client.py
+
+#!/user/bun/python
+
+import socket
+
+s = socket.socket()
+host = socket.gethostname()
+port = 12345
+
+s.connect((host, port))
+print s.recv(1024)
+s.close
+
+
+jika berhasil terkonek maka :
+- di server akan mendapatkan pesan "Got connection from ('127.0.0.1', 40644)
+- di sisi client akan mendapatkan pesan "Thank you for connecting"
+
+--------|Links&Referensi
+http://www.tutorialspoint.com/python/python_networking.htm
+Erickson, John. 2008. Hacking : Art of Exploitation
+
