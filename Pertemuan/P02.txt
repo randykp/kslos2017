@@ -1,0 +1,56 @@
+__/\\\________/\\\_____/\\\\\\\\\\\____/\\\___________________/\\\\\__________/\\\\\\\\\\\___        
+ _\/\\\_____/\\\//____/\\\/////////\\\_\/\\\_________________/\\\///\\\______/\\\/////////\\\_       
+  _\/\\\__/\\\//______\//\\\______\///__\/\\\_______________/\\\/__\///\\\___\//\\\______\///__      
+   _\/\\\\\\//\\\_______\////\\\_________\/\\\______________/\\\______\//\\\___\////\\\_________     
+    _\/\\\//_\//\\\_________\////\\\______\/\\\_____________\/\\\_______\/\\\______\////\\\______    
+     _\/\\\____\//\\\___________\////\\\___\/\\\_____________\//\\\______/\\\__________\////\\\___   
+      _\/\\\_____\//\\\___/\\\______\//\\\__\/\\\______________\///\\\__/\\\_____/\\\______\//\\\__  
+       _\/\\\______\//\\\_\///\\\\\\\\\\\/___\/\\\\\\\\\\\\\\\____\///\\\\\/_____\///\\\\\\\\\\\/___ 
+        _\///________\///____\///////////_____\///////////////_______\/////_________\///////////_____
+
+CATATAN PELATIHAN KSLOS 21/02/2016
+Latihan 04 : Web Exploit 1 >> menggunakan webgoat dan/atau dvwa. Mengikuti course yang ada pada platform webgoat.
+		     Pemahaman dengan bahasa PHP. 
+--------|WebGoat
+
+Webgoat adalah sebuah platform pembelajaran keamanan pada aplikasi web yang dibuat oleh OWASP. Program ini kita gunakan 
+sebagai demonstrasi celah-celah web aplikasi server-side. Siapkan juga program OWASP ZAP pada linux teman-teman.
+
+Untuk pelatihan ini kita menggunakan Easy Run WebGoat : 
+Download aplikasinya di URL berikut :
+--> https://s3.amazonaws.com/webgoat-war/webgoat-container-7.0.1-war-exec.jar
+
+Kemudian run menggunakan java :
+java -jar webgoat-container-7.0.1-war-exec.jar
+
+Bukalah aplikasinya di browser:
+-->http://localhost:8080/WebGoat
+
+--------|Apa Saja Exercise yang ada di WebGoat?
+
+Sesuai yang tertera di website OWASP
+
+
+    Cross-site Scripting (XSS)
+    Access Control
+    Thread Safety
+    Hidden Form Field Manipulation
+    Parameter Manipulation
+    Weak Session Cookies
+    Blind SQL Injection
+
+    Numeric SQL Injection
+    String SQL Injection
+    Web Services
+    Fail Open Authentication
+    Dangers of HTML Comments
+    ... and many more!
+
+--------|Bahasa apa yang harus disiapkan?
+Sesuai dengan celah-celah yang diberikan di WebGoat, kita diharuskan untuk setidaknya mengerti HTTP,
+HTML, PHP, Javascript, dan bahasa-bahasa lain yang digunakan pada aplikasi web.
+
+
+--------|Links&Referensi
+https://github.com/WebGoat/WebGoat
+https://www.owasp.org/index.php/Category:OWASP_WebGoat_Project

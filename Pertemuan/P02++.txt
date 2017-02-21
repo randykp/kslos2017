@@ -1,0 +1,279 @@
+__/\\\________/\\\_____/\\\\\\\\\\\____/\\\___________________/\\\\\__________/\\\\\\\\\\\___        
+ _\/\\\_____/\\\//____/\\\/////////\\\_\/\\\_________________/\\\///\\\______/\\\/////////\\\_       
+  _\/\\\__/\\\//______\//\\\______\///__\/\\\_______________/\\\/__\///\\\___\//\\\______\///__      
+   _\/\\\\\\//\\\_______\////\\\_________\/\\\______________/\\\______\//\\\___\////\\\_________     
+    _\/\\\//_\//\\\_________\////\\\______\/\\\_____________\/\\\_______\/\\\______\////\\\______    
+     _\/\\\____\//\\\___________\////\\\___\/\\\_____________\//\\\______/\\\__________\////\\\___   
+      _\/\\\_____\//\\\___/\\\______\//\\\__\/\\\______________\///\\\__/\\\_____/\\\______\//\\\__  
+       _\/\\\______\//\\\_\///\\\\\\\\\\\/___\/\\\\\\\\\\\\\\\____\///\\\\\/_____\///\\\\\\\\\\\/___ 
+        _\///________\///____\///////////_____\///////////////_______\/////_________\///////////_____
+
+CATATAN PELATIHAN KSLOS 21/02/2016
+Latihan Sampingan 04 : Web Exploit 1 >> Pemahaman bahasa PHP. 
+--------|PHP
+PHP adalah "server scripting language", dan sebuah tool untuk membuat Halaman Website yang dinamik
+dan interaktif. Script PHP di"execute" pada server dan hasilnya ditampilkan pada browser sebagai HTML
+biasa. File PHP dapat terdiri dari teks, HTML, CSS, JavaScript, dan Kode PHP itu sendiri. Ekstensi PHP
+adalah ".php" .
+
+php tidak case sensitive, kecuali nama variabel.
+
+--------|Kenapa PHP?
+Soal-soal Web Exploitation pada CTF banyak yang menggunakan PHP dibandingkan dengan bahasa lain.
+
+--------|Syntax
+Script PHP dapat dimasukkan dimana saja pada file php atau html
+Script PHP dimulai dengan <?php dan diakhiri dengan ?>
+Contoh :
+<!DOCTYPE html>
+<html>
+<body>
+
+<?php
+echo "My first PHP script!"; //Statement diakhiri dengan ; sama seperti C++
+?>
+
+</body>
+</html>
+
+Save as script diatas dan jalankan dengan $php -S.
+
+--------|Comment
+
+// Single Comment
+# Single Comment
+/*
+Multiple
+Comment
+Hehe
+*/
+
+--------|Variabel
+Di PHP, variabel dimulai dengan tanda $ kemudian diikuti dengan nama variabelnya
+
+<?php
+$txt = "Hello world!";
+$x = 5;
+$y = 10.5;
+?> 
+Jalankan PHP code diatas!
+
+==Variabel Global dan Local==
+
+<?php
+function myTest() {
+    $x = 5; // local scope
+    echo "<p>Variable x di dalam function adalah: $x</p>";
+}
+myTest();
+
+// menggunakan x diluar function akan mengakibatkan error
+echo "<p>Variable x di dalam function adalah: $x</p>";
+?> 
+
+Jalankan PHP code diatas!
+
+Fungsi-fungsi lain :
++ define("HALO", "Hello, World!") untuk mendefinisikan suatu constant
++ var_dump($variabel) untuk menampilkan tipe data dari variabel
++ strlen(Hello world!") untuk menampilkan banyak character pada string
++ str_word_count("Hello world!") untuk menampilkan banyak kata pada string
++ strrev("Hello world!") untuk membalik urutan char pada string
++ strpos("Hello world!", "world") untuk menampilkan urutan string argumen2 berada //outputnya 6
++ str_replace("world", "Dolly", "Hello world!") untuk mereplace string
+
+--------|Operations
+
+Hampir sama seperti python(+, -, *, %, **)
+*Baca secara lengkap di manual
+
+Operator yang hanya ada di PHP: 
+==Ternary Operator==
+Ternary operator terdiri dari tiga ekspresi yaitu
+(expr1) ? (expr2) : (expr3)
+jika expr1 == true, maka yang menjadi hasil adalah expr2
+jika expr1 == false, maka yang menjadi hasil adalah expr3
+
+Cobalah script dibawah ini dan pahami outputnya!
+<?php
+echo (1==2? true : false ? 'true' : 'false' );
+echo "<br>";
+echo ((1 == 2 ? true : false) ? 'benar' : 'salah');
+echo "<br>";
+echo (1==1? 'benar' : 'salah');
+?>
+
+--------|Flow Control
+
+FLOW CONTROL:
+
+==IF==
+<?php
+$t = date("H");
+
+if ($t < "20") {
+
+    echo "Have a good day!";
+}
+?> 
+Jalankan PHP code diatas!
+
+If di atas sama seperti di C++, contoh dibawah adalah menggunakan if dalam HTML.
+
+<?php if ($a == 5): ?>
+A is equal to 5
+<?php endif; ?>
+
+
+==WHILE&FOR==
+Sama seperti C++
+
+==FOREACH==
+
+<?php
+$colors = array("red", "green", "blue", "yellow");
+
+foreach ($colors as $value) {
+    echo "$value <br>";
+}
+?> 
+
+--------|Function
+
+Kekuatan dari PHP terlahir dari fungsi2 bawaannya yang mencapai 1000 fungsi. Fungsi PHP
+tidak langsung berjalan saat halamannya terbuka, fungsi harus dipanggil terlebih dahulu.
+
+Syntax fungsi:
+ function functionName() {
+    <statements>
+} 
+
+Penggunaan argumen pada fungsi :
+<?php
+function takes_array($input)
+{
+    echo "$input[0] + $input[1] = ", $input[0]+$input[1];
+}
+?>
+
+--------|Array
+Membuat array di PHP:
+<?php
+$cars = array("Volvo", "BMW", "Toyota");
+echo $cars[0];
+echo count($cars);
+?>
+Jalankan PHP code diatas!
+
+
+ <?php
+$age = array("Peter"=>"35", "Ben"=>"37", "Joe"=>"43");
+echo "Peter is " . $age['Peter'] . " years old.";
+?>  
+Jalankan PHP code diatas!
+
+--------|Include
+
+Kita bisa mengimport suatu php file kedalam php file lain dengan:
+include 'namafile.php';
+
+--------|Form Handling
+Pertemuan lalu kita telah belajar tentang HTTP Method, disana kita
+menggunakan script PHP. Beginilah cara kerjanya:
+
+==Simple HTTP FORM==
+<html>
+<body>
+
+<form action="welcome.php" method="post">
+Name: <input type="text" name="name"><br>
+E-mail: <input type="text" name="email"><br>
+<input type="submit">
+</form>
+
+</body>
+</html> 
+
+Save as "contohhttpform.html"
+
+Saat user mengisi form diatas lalu mengklik tombol submit, data form dikirim 
+ke PHP file bernama "welcome.php" untuk diproses. Disini form data dikirim
+menggunakan HTTP POST method.
+
+welcome.php
+<html>
+<body>
+
+Welcome <?php echo $_POST["name"]; ?><br>
+Your email address is: <?php echo $_POST["email"]; ?>
+
+</body>
+</html> 
+
+Save as "welcome.php"
+
+Cobalah ganti POST method diatas dengan GET method!
+
+==Penjelasan==
+Kedua method GET dan POST akan membuat sebuah array yang memiliki pasangan
+key/value, dinama key adalah nama dari form control dan value adalah input
+data dari user.
+
+GET dan POST pada PHP direpresentasikan dengan $_GET dan $_POST. Keduanya
+merupakan variabel yang superglobal, artinya mereka berdua selalu available
+tanpa melihat scope global maupun local.
+
+
+$_GET adalah array dari variabel yang dioper ke script menggunakan parameter URL.
+
+$_POST adalah array dari variabel yang dioper ke script menggunakan HTTP POST method.
+
+!Bacalah tentang Validasi Form!
+
+--------|Cookie
+
+Cookie sering digunakan untuk identifikasi user. Sebuah cookie adalah file kecil yang
+server simpan dalam komputer user. Setiap kali suatu komputer merequest halaman di 
+browser, cookie juga ikut terkirim. Dengan PHP kita dapat membuat dan menerima cookie
+value tsb.
+
+Cookie dibuat dengan menggunakan fungsi setcookie()
+
+Syntax:
+setcookie(name, value, expire, path, domain, secure, httponly);
+
+Hanya parameter name yang wajib, sisanya opsional
+Note: Fungsi setcookie harus lebih dulu dari tag <html>
+
+cobacookie.php
+<?php
+setcookie("test_cookie", "test", time() + 3600, '/');
+?>
+<html>
+<body>
+
+<?php
+if(count($_COOKIE) > 0) {
+    echo "Cookies are enabled.";
+} else {
+    echo "Cookies are disabled.";
+}
+?>
+
+</body>
+</html> 
+Jalankan script php di atas!
+
+
+--------|Help!
+Tidak seperti python yang manualnya sudah ada, php tidak memiliki manual yang terintegrasi di CLI.
+Download manual php(file HTML) di : http://php.net/download-docs.php
+
+--------|Tambahan
+Belajarlah tentang : 
+Validasi Form (W3 Schools)
+PHP Session (w3schools)
+
+--------|Links&Referensi
+http://php.net/download-docs.php
+http://www.w3schools.com/php
