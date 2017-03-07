@@ -1,0 +1,237 @@
+
+Basic C Language
+
+//meet.c
+#include <stdio.h>				// needed for screen printing
+
+greeting(char *temp1,char *temp2){ 		// greeting function to say hello
+	char name[400]; 			// string variable to hold the name
+	strcpy(name, temp2);			// copy the function argument to name
+printf("Hello %s %s\n", temp1, name); 		//print out the greeting
+}
+main(int argc, char * argv[]){			//note the format for arguments
+	greeting(argv[1], argv[2]);		//call function, pass title & name
+	printf("Bye %s %s\n", argv[1], argv[2]);//say "bye"
+}						//exit program
+
+Compiling with GCC
+
+$gcc -o meet meet.c
+
+Assembly Language Basics
+
+AT&T vs. NASM
+Ada 2 bentuk syntax assembly: AT&T dan Intel. AT&T digunakan oleh GNU assembler
+yang ada di dalam gcc compiler dan biasanya digunakan oleh developer Linux. 
+Perbedaan style dan format :
+• Source dan Destination terbalik dan penggunaan simbol di depan comment :
+  • NASM format: CMD <dest>, <source> <; comment>
+  • AT&T format: CMD <source>, <dest> <# comment>
+• AT&T format uses a % before registers; NASM does not.
+• AT&T format uses a $ before literal values; NASM does not.
+
+Ada beberapa fungsi basic yang ada di assembly diantaranya :
+
+mov
+ -> berfungsi untuk mengcopy data dari source ke tujuan. value dari letak awal tidak dihapus
+NASM			NASM			AT&T
+mov <dest>, <source>	mov eax, 51h ;comment	movl $51h, %eax #comment
+Data tidak bisa langsung dipindahkan dari suatu memory ke segment register. Melainkan,
+kamu harus menggunakan register intermediate step, contohnya:
+mov eax, 1234h	; menyimpan value 1234 (hex) ke dalam eax
+mov cs, ax	; lalu mengcopy value ax ke cs
+
+add and sub
+command add digunakan untuk menambahkan source ke destination dan menyimpan hasilnya ke dalam destination.
+command sub untuk mengurangi source dari destination
+NASM Syntax		NASM Example		AT&T Example
+add <dest>, <source>	add eax, 51h		addl $51h, %eax
+sub <dest>, <source>	sub eax, 51h		subl $51h, %eax
+
+push and pop
+seperti namanya push dan pop digunakan untuk meng-push dan pop item dari stack.
+NASM Syntax		NASM Example		AT&T Example
+push <value>		push eax		pushl %eax
+pop <dest>		pop eax			popl %eax
+
+xor
+command xor digunakan untuk melakukan logika bitwise "exclusive or"(XOR)
+contoh : 1111101 XPR 1011111 = 0100010. Digunakan untuk menghapus atau membersihkan memory register.
+NASM Syntax		NASM Example		AT&T Example
+xor <dest>, <source>	xor eax,eax		xor %eax,%eax
+
+jne, je, jz, jnz, and jmp
+command ini digunakan untuk melakukan jump atau pindah memory berdasarkan value dari eflag "zer flag."
+jne/jnz akan lompat jika "zero flag"=0
+je/jz akan lompat jika "zero flag"=1
+lalu jmp akan selalu lompat
+NASM Syntax		NASM Example		AT&T Example
+jnz <dest> / jne <dest>	jne start		jne start
+jz <dest> /je <dest>	jz loop			jz loop
+jmp <dest>		jmp end			jmp end
+
+call and ret
+command call digunakan untuk memanggil procedure. command red digunakan saat akhir procedure untuk mengembalikan flow ke command setelah di call.
+NASM Syntax		NASM Example		AT&T Example
+call <dest>		call subroutineI	call subroutineI
+ret			ret			ret
+
+inc and dec
+untuk mengincrement atau decrement destination.
+NASM Syntax		NASM Example		AT&T Example
+inc <dest>		inc eax			incl %eax
+dec <dest>		dec eax			decl %eax
+
+lea
+The lea command is used to load the effective address of the source into the destination.
+NASM Syntax		NASM Example		AT&T Example
+lea <dest>, <source>	lea eax, [dsi +4]	leal 4(%dsi), %eax
+
+int
+command int digunakan untuk memberikan sinyal interrup kepada sistem untuk processor. Interrupt yang paling sering digunakan adalah 0x80, yang dimana menggunakan system call ke kernel.
+NASM Syntax		NASM Example		AT&T Example
+int <val>		int 0x80		int $0x80
+
+Assembly File Structure
+An assembly source file is broken into the following sections:
+• .model digunakan untuk menentukan besar dari .data and .text sections.
+• .stack memberikan tanda dari awal dari suatu stack segment dan digunakan untuk menentukan size dari stack dalam byte.
+• .data menandai dari awal suatu data segment dan digunakan untuk mendeklarasikan variable.
+• .text digunakan untuk memegang perintah suatu program.
+
+For example, the following assembly program prints “Hello, haxor!” to the screen:
+section .data				;section declaration
+msg db "Hello, haxor!",0xa		;our string with a carriage return
+len equ $ - msg				;length of our string, $ means here
+section .text			;mandatory section declaration
+				;export the entry point to the ELF linker or
+global _start
+				;loaders conventionally recognize
+				; _start as their entry point
+_start:
+
+
+				;now, write our string to stdout
+				;notice how arguments are loaded in reverse
+mov	edx,len ;third argument (message length)
+mov	ecx,msg ;second argument (pointer to message to write)
+mov	ebx,1	;load first argument (file handle (stdout))
+mov	eax,4	;system call number (4=sys_write)
+int	0x80	;call kernel interrupt and exit
+mov	ebx,0	;load first syscall argument (exit code)
+mov	eax,1	;system call number (1=sys_exit)
+int	0x80	;call kernel interrupt and exit
+
+
+Assembling
+Jalankan perintah ini untuk membuat objeknya
+$ nasm -f elf hello.asm
+Selanjutnya akan memanggil linker untuk membuat file yang dapat dieksekusi
+$ ld -s -o hello hello.o
+$ ./hello
+Hello, haxor!
+
+gdb Basics
+
+Command			Description
+b function		set breakpoint
+b *mem			set breakpoint absolute memory location
+info b			menunjukan informasi tentang breakpoint
+delete b		menghapus breakpoint
+umrun <args>		mulai program debugging dari gdb dengan argumen yang diberikan
+info reg		menunjukan informasi tentang register state
+stepi atau si		eksekusi 1 machine instruction
+next atau n		eksekusi satu function
+bt			backtrace command, memungkinkan kita untuk melihat nama stack frames
+up/down			melihat ke atas atau bawah dari stack frames
+print var		print value dari variable
+print /x $<reg>		print value dari register
+x /NTA			memeriksa memory dimana N= number of units, T= type of data(x:hex, d:dec, c:char, 
+			s:string, i:intruction), A= absolute address atau symbolic name seperti "main"
+quit			exit gdb
+
+Untuk mendebug contoh program kita tadi, kita akan mengikuti perintah dibawah ini.
+Pertama kita recompile dengan debugging option:
+$gcc –ggdb –mpreferred-stack-boundary=2 –o meet meet.c
+$gdb –q meet
+(gdb) run Mr Haxor
+Starting program: /home/aaharper/book/meet Mr Haxor
+Hello Mr Haxor
+Bye Mr Haxor
+Program exited with code 015.
+(gdb) b main
+Breakpoint 1 at 0x8048393: file meet.c, line 9.
+(gdb) run Mr Haxor
+Starting program: /home/aaharper/book/meet Mr Haxor
+
+
+Breakpoint 1, main (argc=3, argv=0xbffffbe4) at meet.c:9
+9		greeting(argv[1],argv[2]);
+(gdb) n
+Hello Mr Haxor
+10		printf("Bye %s %s\n", argv[1], argv[2]);
+(gdb) n
+Bye Mr Haxor
+11	}
+(gdb) p argv[1]
+$1 = 0xbffffd06 "Mr"
+(gdb) p argv[2]
+$2 = 0xbffffd09 "Haxor"
+(gdb) p argc
+$3 = 3
+(gdb) info b
+Num Type	 Disp Enb Address    What
+1   breakpoint	 keep y   0x08048393 in main at meet.c:9
+	breakpoint already hit 1 time
+(gdb) info reg
+eax		0xd		13
+ecx		0x0		0
+edx		0xd		13
+...truncated for brevity...
+(gdb) quit
+A debugging session is active.
+Do you still want to close the debugger?(y or n) y
+$
+
+Disassembly dengan gdb
+
+set disassembly-flavor <intel/att>
+disassemble <function name>
+
+perintah pertama akan mengubah format dari Intel (NASM) dan AT&T, default gdb menggunakan format AT&T.
+perintah kedua akan memasukan function (termasuk main). contohnya, kita akan melakukan disassemble the function greeting di kedua format 
+
+$gdb -q meet
+(gdb) disassemble greeting
+Dump of assembler code for function greeting:
+0x804835c <greeting>:	push	%ebp
+0x804835d <greeting+1>: mov	%esp,%ebp
+0x804835f <greeting+3>: sub	$0x190,%esp
+0x8048365 <greeting+9>: pushl 	0xc(%ebp)
+0x8048368 <greeting+12>:	lea	0xfffffe70(%ebp),%eax
+0x804836e <greeting+18>:	push	%eax
+0x804836f <greeting+19>:	call	0x804829c <strcpy>
+0x8048374 <greeting+24>:	add	$0x8,%esp
+0x8048377 <greeting+27>:	lea	0xfffffe70(%ebp),%eax
+0x804837d <greeting+33>:	push	%eax
+0x804837e <greeting+34>:	pushl 	0x8(%ebp)
+0x8048381 <greeting+37>:	push	$0x8048418
+0x8048386 <greeting+42>:	call	0x804828c <printf>
+0x804838b <greeting+47>:	add	$0xc,%esp
+0x804838e <greeting+50>:	leave	
+0x804838f <greeting+51>:	ret
+End of assembler dump.
+(gdb) set disassembly-flavor intel
+(gdb) disassemble greeting
+Dump of assembler code for function greeting:
+0x804835c <greeting>:	push	ebp
+0x804835d <greeting+1>: mov	ebp,esp
+0x804835f <greeting+3>: sub	esp,0x190
+...truncated for brevity...
+End of assembler dump.
+(gdb) quit
+$
+
+References
+Debugging with NASM and gdb www.csee.umbc.edu/help/nasm/nasm.shtml
+Smashing the Stack..., Aleph One www.phrack.org/archives/49/P49-14
