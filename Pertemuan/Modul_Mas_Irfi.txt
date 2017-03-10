@@ -1,0 +1,244 @@
+__/\\\________/\\\_____/\\\\\\\\\\\____/\\\___________________/\\\\\__________/\\\\\\\\\\\___        
+ _\/\\\_____/\\\//____/\\\/////////\\\_\/\\\_________________/\\\///\\\______/\\\/////////\\\_       
+  _\/\\\__/\\\//______\//\\\______\///__\/\\\_______________/\\\/__\///\\\___\//\\\______\///__      
+   _\/\\\\\\//\\\_______\////\\\_________\/\\\______________/\\\______\//\\\___\////\\\_________     
+    _\/\\\//_\//\\\_________\////\\\______\/\\\_____________\/\\\_______\/\\\______\////\\\______    
+     _\/\\\____\//\\\___________\////\\\___\/\\\_____________\//\\\______/\\\__________\////\\\___   
+      _\/\\\_____\//\\\___/\\\______\//\\\__\/\\\______________\///\\\__/\\\_____/\\\______\//\\\__  
+       _\/\\\______\//\\\_\///\\\\\\\\\\\/___\/\\\\\\\\\\\\\\\____\///\\\\\/_____\///\\\\\\\\\\\/___ 
+        _\///________\///____\///////////_____\///////////////_______\/////_________\///////////_____
+
+CATATAN PELATIHAN KSLOS 25/04/2016, LN08v1a.txt
+Latihan 08 : Pengenalan Binary Exploit & Reverse Engineering 1
+              Buffer Overflow 
+
+--------| Pendahuluan
+
+Pada program apapun (termasuk C), ada sebuah cara untuk mengkorup
+eksekusi program (segmentation fault) dengan cara menginput data
+melebihi suatu array. Teknik ini dinamai "smash the stack", dan 
+dapat berakibat fatal. 
+
+Walaupun teknik ini dikatakan klasik ternyata sampai sekarang(2016),
+masih banyak vulnerability(celah) ditemukan pada program-program 
+yang kita kenal.
+
+--------| Prasyarat
+
+  + Basic assembly (seperti pertemuan kemarin, cukup)
+  + Konsep virtual memori
+  + GDB
+
+--------| Buffer?
+
+Buffer singkatnya adalah sebuah rentetan block memori komputer yang
+memiliki tipe data yang sama. Biasanya di C, buffer berarti array, 
+atau lebih sering array of char. 
+
+Array dan data tipe lainnya di C bisa dideklarasi secara statis atau
+dinamis. 
+  Variabel statis akan dialokasikan saat load time di segmen memori:data. 
+  Variabel dinamis dialokasi saat run time pada segmen memori : stack.
+
+Kita akan fokus pada buffer overflow di stack, stack-based buffer overflow.
+Atau sering dinamai stack-overflow.
+
+Ada tiga bagian(segmen memori) pada suatu proses : 
+  Text, Data, dan stack
+
+                             /------------------\  lower
+                             |                  |  memory
+                             |       Text       |  addresses
+                             |                  |
+                             |------------------|
+                             |   (Initialized)  |
+                             |        Data      |
+                             |  (Uninitialized) |
+                             |------------------|
+                             |                  |
+                             |       Stack      |  higher
+                             |                  |  memory
+                             \------------------/  addresses
+
+Text : berisi kode dan data read-only
+
+Data : berisi data yang belum diinisialisasi dan sudah diinisialisi. 
+       Variabel static berada pada segmen ini. Bagian ini berkorespon
+       densi pada data-bss di executable file. Sizenya dapat diubah
+       dengan system call brk(2) (lihat man 2 brk). Jika ternyata
+       ekspansi data bss atau stack melebihi memori yang tersedia, 
+       proses akan diblock dan diulang dengan memory space yang lebih
+       banyak. Memori baru akan diletakan diantara segmen data
+       dan stack.
+
+Stack : adalah tipe data abstrak yang sering ditemui di ilmu komputer.
+        Objek yang terakhir dimasukkan ke dalam stack adalah yang pertama
+        kali dikeuarkan. Konsep ini dinamai last in, first out queue, atau
+        LIFO. Analoginya seperti tumpukan piring.
+
+        Operasi yang terpenting di stack adalah PUSH dan POP. PUSH meletakkan
+        sebuah elemen pada stack, dan POP mengurangi ukuran stack dengan cara
+        menghapus elemen teratas pada stack.
+
+--------| Region Stack
+
+Stack adalah block memori yang tidak terputus. Register bernama stack pointer(sp)
+akan menunjuk ke elemen stack yang teratas. Stack paling bawah berada pada alamat
+memori yang tetap(fix). Ukurannya akan ditentukan secara dinamik oleh kernel saat
+run time. 
+
+Tergantung implementasi, stack bisa tumbuh ke bawah(ke alamat memori yang lebih kecil),
+atau ke atas. Pada bahasan ini, stack tumbuh ke bawah(arsitektur Intel, MIPS, dll).
+
+Stack pointer juga tergantung implementasi, bisa menunjuk ke alamat terakhir stack,
+atau alamat pertama stack. Pada bahasan ini, stack pointer menunjuk ke alamat ter
+akhir stack(paling atas).
+
+--------| Buffer Overflow
+
+Kelemahan/celah buffer overflow telah ada sejak awal era komputer dan masih
+ada sampai sekarang.
+
+lihat http://www.cvedetails.com/google-search-results.php?q=overflow&sa=Search
+
+C adalah bahasa high-level dibawah asumsi bahwa programmerlah yang bertanggung
+jawab atas integritas data. Jika tanggung jawab ini diberikan ke compiler, file
+binary akan lebih lambat secara signifikan karena adanya cek integritas untuk
+semua variabel. Dan juga menghapus kontrol programmer dan membuat ribet bahasanya.
+
+Kebebasan di programmer dan efisiensi C mempunyai kelemahan juga, yaitu program
+dapat memiliki celah di buffer overflow dan memory leaks. Artinya jika variabel
+sudah ada dalam memori, tidak ada yang menjamin konten dari variabel muat dalam 
+space memori yang sudah dialokasikan.
+
+Misalnya seorang programmer mau memasukan data 10 bytes ke dalam buffer yang
+hanya mealokasi 8 bytes, hal seperti ini sering kali diperbolehkan walaupun akan
+membuat program crash. Ini dikenal dengan buffer overrun atau buffer overflow,
+karena 2 bytes sisanya akan tertimpa. Jika yang tertimpa itu data yang penting,
+program akan crash.
+
+
+--------| Contoh
+!Compile dan periksa menggunkan gdb!
+
+Untuk meng-compile dengan 32-bit di os 64-bit harus mendownload library 32-bit terlebih dahulu
+
++---------------------------------------
+$ sudo apt-get install libc6-dev-i386   
++---------------------------------------
+
++---------------------------------------
+$ gcc -m32 overflow_example.c
+$ gdb ./a.out
++---------------------------------------
+atau
++---------------------------------------
+$ gcc -m32 -g overflow_example.c
+$ gdb ./a.out
++---------------------------------------
+
++ overflow_example.c +
+
+#include <stdio.h>
+#include <string.h>
+int main(int argc, char *argv[]) {
+  int value = 5;
+  char buffer_one[8], buffer_two[8];
+  strcpy(buffer_one, "one"); /* Put "one" into buffer_one. */
+  strcpy(buffer_two, "two"); /* Put "two" into buffer_two. */
+  printf("[BEFORE] buffer_two is at %p and contains \'%s\'\n", buffer_two, buffer_two);
+  printf("[BEFORE] buffer_one is at %p and contains \'%s\'\n", buffer_one, buffer_one);
+  printf("[BEFORE] value is at %p and is %d (0x%08x)\n", &value, value, value);
+  printf("\n[STRCPY] copying %d bytes into buffer_two\n\n", strlen(argv[1]));
+  strcpy(buffer_two, argv[1]); /* Copy first argument into buffer_two. */
+  printf("[AFTER] buffer_two is at %p and contains \'%s\'\n", buffer_two, buffer_two);
+  printf("[AFTER] buffer_one is at %p and contains \'%s\'\n", buffer_one, buffer_one);
+  printf("[AFTER] value is at %p and is %d (0x%08x)\n", &value, value, value);
+}
+
+
+!Cobalah untuk melakukan buffer overflow!
+
++ auth_overflow.c +
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+int check_authentication(char *password) {
+  int auth_flag = 0;
+  char password_buffer[16];
+  strcpy(password_buffer, password);
+  if(strcmp(password_buffer, "brillig") == 0)
+  auth_flag = 1;
+  if(strcmp(password_buffer, "outgrabe") == 0)
+  auth_flag = 1;
+  return auth_flag;
+}
+int main(int argc, char *argv[]) {
+  if(argc < 2) {
+    printf("Usage: %s <password>\n", argv[0]);
+    exit(0);
+  }
+  if(check_authentication(argv[1])) {
+    printf("\n-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
+    printf("
+    Access Granted.\n");
+    printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
+  } 
+  else {
+    printf("\nAccess Denied.\n");
+  }
+}
+
+!Cobalah untuk melakukan buffer overflow!
+!HINT:return address!
+
++ auth_overflow2.c +
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+int check_authentication(char *password) {
+  char password_buffer[16];
+  int auth_flag = 0;
+  strcpy(password_buffer, password);
+  if(strcmp(password_buffer, "brillig") == 0)
+  auth_flag = 1;
+  if(strcmp(password_buffer, "outgrabe") == 0)
+  auth_flag = 1;
+  return auth_flag;
+}
+int main(int argc, char *argv[]) {
+  if(argc < 2) {
+    printf("Usage: %s <password>\n", argv[0]);
+    exit(0);
+  }
+  if(check_authentication(argv[1])) {
+    printf("\n-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
+    printf("
+    Access Granted.\n");
+    printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
+  } 
+  else {
+    printf("\nAccess Denied.\n");
+  }
+}
+
+--------|Menggunakan bash untuk buffer overflow
+
+Dengan terminal bash, kita dapat menghasilkan huruf/hex/angka
+yang dapat digunakan pada buffer overflow. Disini kita menggu-
+nakan perl atau python.
+
+Contoh :
+
++---------------------------------------
+$ perl -e 'print "A" x 20;'
+$ ./auth_overflow2 $(perl -e 'print "\xbf\x84\x04\x08"x10')
++---------------------------------------
+--------|Links&Referensi
+Hacking : Art Of Exploitation 2nd version*
+Aleph One, Smashing The Stack For Fun And Profit*
+
+
+*: rekomendasi untuk dibaca
